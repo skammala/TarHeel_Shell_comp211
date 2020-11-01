@@ -120,19 +120,13 @@ bool Vec_equals(const Vec *self, const Vec *other) {
 
 void Vec_splice(Vec *self, size_t index, size_t delete_count, const void *items, size_t insert_count) {
     if((index + delete_count) <= self->length) {
-        size_t original_length = self->length;
-        _ensure_capacity(self, original_length + (insert_count - delete_count));
+        size_t init_len = self->length;
+        _ensure_capacity(self, init_len + (insert_count - delete_count));
         if(insert_count > delete_count) {
             self->length += (insert_count - delete_count);
         }
-        if(original_length != 0) {
-            for(size_t i = (original_length - 1); i >= (index + delete_count); i--) {
-                memcpy(Vec_ref(self, i - delete_count + insert_count), Vec_ref(self, i), self->item_size);
-            }
-        }
-        for(size_t i = 0; i < insert_count; ++i) {
-            memcpy(Vec_ref(self, index + i), items + (i * self->item_size), self->item_size);
-        }
+        memcpy(Vec_ref(self, index + insert_count), Vec_ref(self, index + delete_count), self->item_size * (init_len - (index + delete_count)));
+        memcpy(Vec_ref(self, index), items, self->item_size * insert_count);
         if(insert_count <= delete_count) {
             self->length += (insert_count - delete_count);
         }
