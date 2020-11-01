@@ -125,7 +125,9 @@ void Vec_splice(Vec *self, size_t index, size_t delete_count, const void *items,
         if(insert_count > delete_count) {
             self->length += (insert_count - delete_count);
         }
-        memcpy(Vec_ref(self, index + insert_count), Vec_ref(self, index + delete_count), self->item_size * (init_len - (index + delete_count)));
+        if(index != init_len) {
+            memcpy(Vec_ref(self, index + insert_count), Vec_ref(self, index + delete_count), self->item_size * (init_len - (index + delete_count)));
+        }
         memcpy(Vec_ref(self, index), items, self->item_size * insert_count);
         if(insert_count <= delete_count) {
             self->length += (insert_count - delete_count);

@@ -254,3 +254,24 @@ TEST(VecImpl, splice_replace_several_inserts) {
     ASSERT_EQ(15, buffer[9]);
     Vec_drop(&v);
 }
+
+TEST(VecImpl, splice_append) {
+    Vec v = Vec_value(3, sizeof(int16_t));
+    int16_t *buffer = (int16_t*) v.buffer;
+    buffer[0] = 10;
+    buffer[1] = 20;
+    buffer[2] = 30;
+    v.length = 3;
+    int16_t items[] = {40, 50, 60, 70};
+    Vec_splice(&v, 3, 0, items, 4);
+    buffer = (int16_t*) v.buffer;
+    ASSERT_EQ(7, v.length);
+    ASSERT_EQ(10, buffer[0]);
+    ASSERT_EQ(20, buffer[1]);
+    ASSERT_EQ(30, buffer[2]);
+    ASSERT_EQ(40, buffer[3]);
+    ASSERT_EQ(50, buffer[4]);
+    ASSERT_EQ(60, buffer[5]);
+    ASSERT_EQ(70, buffer[6]);
+    Vec_drop(&v);
+}
