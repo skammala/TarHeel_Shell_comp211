@@ -46,8 +46,169 @@ TEST(VecImpl, ref_out_of_bounds) {
     buffer[2] = 300;
     v.length = 3;
     ASSERT_DEATH({
-       Vec_ref(&v, 3);
-    }, ".* - Out of Bounds");
+            Vec_ref(&v, 3);
+            }, ".* - Out of Bounds");
     Vec_drop(&v);
 }
 
+TEST(VecImpl, get) {
+    Vec v = Vec_value(2, sizeof(int16_t));
+    int16_t *buffer = (int16_t*) v.buffer;
+    buffer[0] = 200;
+    buffer[1] = 300;
+    v.length = 2;
+    int16_t int_val = 0;
+    Vec_get(&v, 1, &int_val);
+    ASSERT_EQ(300, int_val); 
+    Vec_drop(&v);
+}
+
+TEST(VecImpl, get_out_of_bounds) { 
+    Vec v = Vec_value(3, sizeof(int16_t));
+    int16_t *buffer = (int16_t*) v.buffer;
+    buffer[0] = 100;
+    buffer[1] = 200;
+    v.length = 2;
+    ASSERT_DEATH({
+            Vec_ref(&v, 2);
+            }, ".* - Out of Bounds");
+    Vec_drop(&v);
+}
+
+TEST(VecImpl, set) {
+    Vec v = Vec_value(3, sizeof(int16_t));
+    ASSERT_EQ(0, v.length);
+    int16_t *buffer = (int16_t*) v.buffer;
+    buffer[0] = 100;
+    buffer[1] = 200;
+    v.length = 2;
+    int16_t val = 400;
+    Vec_set(&v, 2, &val);
+    ASSERT_EQ(val, buffer[2]);
+    ASSERT_EQ(3, v.length); 
+    Vec_drop(&v);
+}
+
+TEST(VecImpl, set_exceeds_capacity) {
+    Vec v = Vec_value(1, sizeof(int16_t));
+    int16_t *buffer = (int16_t*) v.buffer;
+    buffer[0] = 100;
+    v.length = 1;
+    int16_t val = 100;
+    Vec_set(&v, 1, &val);
+    ASSERT_EQ(val, buffer[1]);
+    ASSERT_EQ(v.length, 2);
+    ASSERT_EQ(v.capacity, 4);
+    Vec_drop(&v);
+}
+
+TEST(VecImpl, set_out_of_bounds) {
+    Vec v = Vec_value(4, sizeof(int16_t));
+    int16_t *buffer = (int16_t*) v.buffer;
+    buffer[0] = 100;
+    buffer[1] = 200;
+    v.length = 2;
+    int16_t val = 400;
+    ASSERT_DEATH({
+            Vec_set(&v, 3, &val);
+            }, ".* - Out of Bounds");
+    Vec_drop(&v);
+}
+
+TEST(VecImpl, equals) {
+    Vec v = Vec_value(4, sizeof(int16_t));
+    Vec v2 = Vec_value(2, sizeof(int16_t));
+    Vec v3 = Vec_value(4, sizeof(int16_t));
+    int16_t *buffer = (int16_t*) v.buffer;
+    int16_t *buffer2 = (int16_t*) v2.buffer;
+    int16_t *buffer3 = (int16_t*) v3.buffer;
+    buffer[0] = 50;
+    buffer2[0] = 50;
+    buffer3[0] = 1000;
+    buffer3[1] = 1000;
+    v.length = 1;
+    v2.length = 1;
+    v3.length = 2;
+    ASSERT_EQ(true, Vec_equals(&v, &v2));
+    ASSERT_EQ(false, Vec_equals(&v, &v3));
+    Vec_drop(&v);
+    Vec_drop(&v2);
+    Vec_drop(&v3);
+}
+
+TEST(VecImpl, splice_delete) {
+    Vec v = Vec_value(3, sizeof(int16_t));
+    int16_t *buffer = (int16_t*) v.buffer;
+    buffer[0] = 100;
+    buffer[1] = 200;
+    buffer[2] = 300;
+    v.length = 3;
+    int16_t items[] = {0, 1, 2};
+    Vec_splice(&v, 1, 1, items, 0);
+    buffer = (int16_t*) v.buffer;
+    ASSERT_EQ(2, v.length);
+    ASSERT_EQ(100, buffer[0]);
+    ASSERT_EQ(300, buffer[1]);
+    Vec_drop(&v);
+}
+
+TEST(VecImpl, splice_delete_single_item) {
+   Vec v = Vec_value(1, sizeof(int16_t));
+  int16_t *buffer = (int16_t*) v.buffer; 
+  buffer[0] = 100;
+  v.length = 1;
+  int16_t items[] = {0, 1, 2};
+  Vec_splice(&v, 0, 1, items, 0);
+  ASSERT_EQ(0, v.length);
+  Vec_drop(&v);
+}
+
+TEST(VecImpl, splice_delete_empty_vec) {
+    Vec v = Vec_value(0, sizeof(int16_t));
+    ASSERT_EQ(0, v.length);
+    int16_t items[] = {1, 2, 3};
+    ASSERT_DEATH({
+            Vec_splice(&v, 0, 1, items, 0);
+            }, ".* - Out of Bounds");
+    Vec_drop(&v);
+}
+
+TEST(VecImpl, splice_delete_exceeds_bounds) {
+    Vec v = Vec_value(2, sizeof(int16_t));
+    int16_t *buffer = (int16_t*) v.buffer;
+    buffer[0] = 100;
+    buffer[1] = 200;
+    v.length = 2;
+    int16_t items[] = {1, 2, 3}; 
+    ASSERT_DEATH({
+            Vec_splice(&v, 0, 3, items, 1);
+            }, ".* - Out of Bounds");
+    Vec_drop(&v);
+}
+
+TEST(VecImpl, splice_insert) {
+    Vec v = Vec_value(2, sizeof(int16_t));
+    int16_t *buffer = (int16_t*) v.buffer;
+    buffer[0] = 100;
+    buffer[1] = 400;
+    int16_t items[] = {200, 300, 400, 500};
+    v.length = 2;
+    Vec_splice(&v, 1, 0, items, 2);
+    ASSERT_EQ(4, v.length);
+    ASSERT_EQ(100, buffer[0]);
+    ASSERT_EQ(200, buffer[1]);
+    ASSERT_EQ(300, buffer[2]);
+    ASSERT_EQ(400, buffer[3]);
+    Vec_drop(&v);
+}
+
+TEST(VecImpl, splice_insert_empty_vec) {
+    Vec v = Vec_value(0, sizeof(int16_t));
+    int16_t *buffer = (int16_t*) v.buffer;
+    ASSERT_EQ(0, v.length);
+    int16_t items[] = {100, 200};
+    Vec_splice(&v, 0, 0, items, 2);
+    ASSERT_EQ(100, buffer[0]);
+    ASSERT_EQ(200, buffer[1]);
+    Vec_drop(&v);
+}
