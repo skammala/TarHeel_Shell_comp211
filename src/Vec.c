@@ -119,7 +119,7 @@ bool Vec_equals(const Vec *self, const Vec *other) {
    */
 
 void Vec_splice(Vec *self, size_t index, size_t delete_count, const void *items, size_t insert_count) {
-    if(((index < self->length) && (delete_count <= (self->length - index))) || ((self->length == 0) && (index == 0) && (delete_count == 0))) {
+    if((index + delete_count) <= self->length) {
         size_t original_length = self->length;
         if(insert_count > delete_count) {
             _ensure_capacity(self, self->length + (insert_count - delete_count));

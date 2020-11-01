@@ -186,18 +186,18 @@ TEST(VecImpl, splice_delete_exceeds_bounds) {
     Vec_drop(&v);
 }
 
-TEST(VecImpl, splice_insert) {
+TEST(VecImpl, splice_prepend) {
     Vec v = Vec_value(2, sizeof(int16_t));
     int16_t *buffer = (int16_t*) v.buffer;
     buffer[0] = 100;
     buffer[1] = 400;
     int16_t items[] = {200, 300, 400, 500};
     v.length = 2;
-    Vec_splice(&v, 1, 0, items, 2);
+    Vec_splice(&v, 0, 0, items, 2);
     ASSERT_EQ(4, v.length);
-    ASSERT_EQ(100, buffer[0]);
-    ASSERT_EQ(200, buffer[1]);
-    ASSERT_EQ(300, buffer[2]);
+    ASSERT_EQ(200, buffer[0]);
+    ASSERT_EQ(300, buffer[1]);
+    ASSERT_EQ(100, buffer[2]);
     ASSERT_EQ(400, buffer[3]);
     Vec_drop(&v);
 }
