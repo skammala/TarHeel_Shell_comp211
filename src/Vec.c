@@ -82,42 +82,6 @@ bool Vec_equals(const Vec *self, const Vec *other) {
         return false;
     }
 }
-/*
-   void Vec_splice(Vec *self, size_t index, size_t delete_count, const void *items, size_t insert_count) {
-   if(((index < self->length) && (delete_count <= (self->length - index))) || ((self->length == 0) && (index == 0) && (delete_count == 0))) {
-   size_t new_buffer_length = self->length+(insert_count-delete_count);
-   void *new_buffer = calloc(new_buffer_length, self->item_size); 
-   OOM_GUARD(new_buffer, __FILE__, __LINE__);
-
-   if(new_buffer_length == 0) {
-   free(self->buffer);
-   self->buffer = new_buffer;
-   self->length = 0;
-   self->capacity = 0;
-   return;
-   }
-
-   size_t orig_array_idx = index + delete_count;
-   for(size_t i=0; i<index; ++i) {
-   memcpy(new_buffer + (i * self->item_size), Vec_ref(self, i), self->item_size);
-   }
-   for(size_t i=0; i<insert_count; ++i) {
-   memcpy(new_buffer + ((i + index) * self->item_size), items + (i * self->item_size), self->item_size);
-   }
-   for(size_t i = index+insert_count; i < new_buffer_length; ++i) {
-   memcpy(new_buffer + (i * self->item_size), Vec_ref(self, orig_array_idx++), self->item_size);
-   }
-   free(self->buffer);
-   self->buffer = new_buffer;
-   self->length = new_buffer_length;
-   self->capacity = new_buffer_length;
-
-   } else { 
-   fprintf(stderr, "%s:%d - Out of Bounds", __FILE__, __LINE__);
-   exit(EXIT_FAILURE);
-   }
-   }
-   */
 
 void Vec_splice(Vec *self, size_t index, size_t delete_count, const void *items, size_t insert_count) {
     if((index + delete_count) <= self->length) {

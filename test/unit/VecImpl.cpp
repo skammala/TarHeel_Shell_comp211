@@ -151,18 +151,7 @@ TEST(VecImpl, splice_delete) {
     ASSERT_EQ(300, buffer[1]);
     Vec_drop(&v);
 }
-/*
-TEST(VecImpl, splice_delete_single_item) {
-   Vec v = Vec_value(1, sizeof(int16_t));
-  int16_t *buffer = (int16_t*) v.buffer; 
-  buffer[0] = 100;
-  v.length = 1;
-  int16_t items[] = {0, 1, 2};
-  Vec_splice(&v, 0, 1, items, 0);
-  ASSERT_EQ(0, v.length);
-  Vec_drop(&v);
-}
-*/
+
 TEST(VecImpl, splice_delete_empty_vec) {
     Vec v = Vec_value(0, sizeof(int16_t));
     ASSERT_EQ(0, v.length);
@@ -201,19 +190,7 @@ TEST(VecImpl, splice_prepend) {
     ASSERT_EQ(400, buffer[3]);
     Vec_drop(&v);
 }
-/*
-TEST(VecImpl, splice_insert_empty_vec) {
-    Vec v = Vec_value(0, sizeof(int16_t));
-    int16_t *buffer = (int16_t*) v.buffer;
-    ASSERT_EQ(0, v.length);
-    int16_t items[] = {100, 200};
-    Vec_splice(&v, 0, 0, items, 2);
-    buffer = (int16_t*) v.buffer;
-    ASSERT_EQ(100, buffer[0]);
-    ASSERT_EQ(200, buffer[1]);
-    Vec_drop(&v);
-}
-*/
+
 TEST(VecImpl, splice_replace_entire_vec) {
     Vec v = Vec_value(4, sizeof(int16_t));
     int16_t *buffer = (int16_t*) v.buffer;
@@ -272,5 +249,25 @@ TEST(VecImpl, splice_append) {
     ASSERT_EQ(50, buffer[4]);
     ASSERT_EQ(60, buffer[5]);
     ASSERT_EQ(70, buffer[6]);
+    Vec_drop(&v);
+}
+
+TEST(VecImpl, splice_replace_more_items) {
+    Vec v = Vec_value(3, sizeof(int16_t));
+    int16_t* buffer = (int16_t*) v.buffer;
+    buffer[0] = 100;
+    buffer[1] = 200;
+    buffer[2] = 300;
+    v.length = 3;
+    int16_t items[] = {10, 20, 30, 40, 50, 60};
+    Vec_splice(&v, 0, 3, items, 6);
+    buffer = (int16_t*) v.buffer;
+    ASSERT_EQ(6, v.length);
+    ASSERT_EQ(10, buffer[0]);
+    ASSERT_EQ(20, buffer[1]);
+    ASSERT_EQ(30, buffer[2]);
+    ASSERT_EQ(40, buffer[3]);
+    ASSERT_EQ(50, buffer[4]);
+    ASSERT_EQ(60, buffer[5]);
     Vec_drop(&v);
 }
