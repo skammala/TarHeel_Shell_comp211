@@ -6,6 +6,7 @@
 
 #include "Vec.h"
 
+static void* _get_pointer(const Vec*, size_t);
 static void _ensure_capacity(Vec*, size_t);
 
 /* Constructor / Destructor */
@@ -120,22 +121,18 @@ bool Vec_equals(const Vec *self, const Vec *other) {
 
 void Vec_splice(Vec *self, size_t index, size_t delete_count, const void *items, size_t insert_count) {
     if((index + delete_count) <= self->length) {
-        size_t init_len = self->length;
-        _ensure_capacity(self, init_len + (insert_count - delete_count));
-        if(insert_count > delete_count) {
-            self->length += (insert_count - delete_count);
-        }
-        if(index != init_len) {
-            memcpy(Vec_ref(self, index + insert_count), Vec_ref(self, index + delete_count), self->item_size * (init_len - (index + delete_count)));
-        }
-        memcpy(Vec_ref(self, index), items, self->item_size * insert_count);
-        if(insert_count <= delete_count) {
-            self->length += (insert_count - delete_count);
-        }
+        _ensure_capacity(self, self->length + (insert_count - delete_count));
+        memcpy(_get_pointer(self, index + insert_count), _get_pointer(self, index + delete_count), self->item_size * (self->length - (index + delete_count)));
+        memcpy(_get_pointer(self, index), items, self->item_size * insert_count);
+        self->length += (insert_count - delete_count);
     } else {
         fprintf(stderr, "%s:%d - Out of Bounds", __FILE__, __LINE__);
         exit(EXIT_FAILURE);
     }
+}
+
+static void* _get_pointer(const Vec *self, size_t index) {
+    return self->buffer + (index * self->item_size);
 }
 
 static void _ensure_capacity(Vec *self, size_t n) {
