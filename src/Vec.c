@@ -58,12 +58,10 @@ void Vec_get(const Vec *self, size_t index, void *out) {
 }
 
 void Vec_set(Vec *self, size_t index, const void *value) {
-    if(index < self->length) {
-        memcpy(Vec_ref(self, index), value, self->item_size);
-    } else if(index == self->length) {
-        _ensure_capacity(self, index+1);
-        memcpy(self->buffer + (index * self->item_size), value, self->item_size);
-        (self->length)++;
+    if(index == self->length) {
+        Vec_splice(self, index, 0, value, 1);
+    } else if(index < self->length) {
+        Vec_splice(self, index, 1, value, 1);  
     } else {
         fprintf(stderr, "%s:%d - Out of Bounds", __FILE__, __LINE__);
         exit(EXIT_FAILURE);
