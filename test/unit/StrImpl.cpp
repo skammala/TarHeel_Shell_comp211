@@ -64,4 +64,51 @@ TEST(StrImpl, ref) {
     Str_drop(&s);
 }
 
-// TODO: Test remaining Str functions
+TEST(StrImpl, from) {
+    Str from = Str_from("abc");
+    ASSERT_EQ(3, from.length - 1);
+    char *buffer = (char*) from.buffer;
+    ASSERT_EQ('a', buffer[0]);
+    ASSERT_EQ('b', buffer[1]);
+    ASSERT_EQ('c', buffer[2]);
+    ASSERT_EQ('\0', buffer[3]);
+    Str_drop(&from);
+}
+
+TEST(StrImpl, splice_replace_partial) {
+    Str s = fixture_abcd();
+    char cstr[] = {'y', 'z'};
+    Vec_splice(&s, 1, 3, cstr, 2);
+    char *buffer = (char*) s.buffer;
+    ASSERT_EQ('a', buffer[0]);
+    ASSERT_EQ('y', buffer[1]);
+    ASSERT_EQ('z', buffer[2]);
+    Str_drop(&s);
+}
+
+TEST(StrImpl, splice_retains_null_char) {
+    Str s = fixture_abcd();
+    char cstr[] = {'y', 'z'};
+    Vec_splice(&s, 1, 3, cstr, 2);
+    char *buffer = (char*) s.buffer;
+    ASSERT_EQ('a', buffer[0]);
+    ASSERT_EQ('y', buffer[1]);
+    ASSERT_EQ('z', buffer[2]);
+    ASSERT_EQ('\0', buffer[3]);
+    Str_drop(&s);
+}
+
+TEST(StrImpl, splice_append_string) {
+    Str s = fixture_abcd();
+    char cstr[] = {'e', 'f'};
+    Vec_splice(&s, 4, 0, cstr, 2);
+    char *buffer = (char*) s.buffer;
+    ASSERT_EQ(6, s.length - 1);
+    ASSERT_EQ('a', buffer[0]);
+    ASSERT_EQ('b', buffer[1]);
+    ASSERT_EQ('c', buffer[2]);
+    ASSERT_EQ('d', buffer[3]);
+    ASSERT_EQ('e', buffer[4]);
+    ASSERT_EQ('f', buffer[5]);
+    Str_drop(&s);
+}
