@@ -57,7 +57,7 @@ TEST(VecImpl, get) {
     buffer[0] = 200;
     buffer[1] = 300;
     v.length = 2;
-    int16_t int_val = 0;
+    int16_t int_val;
     Vec_get(&v, 1, &int_val);
     ASSERT_EQ(300, int_val); 
     Vec_drop(&v);
@@ -69,8 +69,9 @@ TEST(VecImpl, get_out_of_bounds) {
     buffer[0] = 100;
     buffer[1] = 200;
     v.length = 2;
+    int16_t out;
     ASSERT_DEATH({
-            Vec_ref(&v, 2);
+            Vec_get(&v, 2, &out);
             }, ".* - Out of Bounds");
     Vec_drop(&v);
 }
