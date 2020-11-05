@@ -57,7 +57,9 @@ char Str_get(const Str *self, size_t index) {
 
 void Str_set(Str *self, size_t index, const char value) {
     if(index == Str_length(self)) {
-        Str_append(self, &value);
+        char null = '\0';
+        Vec_set(self, index, &value);
+        Vec_set(self, index + 1, &null);
     } else if(index < Str_length(self)) {
         Vec_set(self, index, &value);
     }
