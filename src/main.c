@@ -2,34 +2,76 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "Vec.h"
 #include "Str.h"
+#include "Scanner.h"
+#include "Parser.h"
 
-#define MAX_CHARS 30
+#define BUFF_SIZE 80 
 
-char *string_calloc(size_t);
-void print_str_contents(Str*);
+/**
+ * This program reads an input line from stdin and prints textual
+ * representations of the tokens scanned from lines of input.
+ */
+
+// These three functions provide the basis of a REPL:
+// Read-Evaluate-Print-Loop
+size_t read(Str *line, FILE *stream);
+Node* eval(Str *input);
+void print(Node *node, size_t indention);
 
 int main()
 {
-    char *line = malloc(MAX_CHARS);
-    Str c = Str_value(MAX_CHARS);
-
-    while((line = fgets(line, MAX_CHARS, stdin)) != NULL) {
-        Str_append(&c, line);
-
-        if(strchr(line, '\n') != NULL) {
-            print_str_contents(&c);
-            Str_drop(&c);
-            c = Str_value(MAX_CHARS);
-        }
-
+    Str line = Str_value(BUFF_SIZE);
+    while (read(&line, stdin)) {
+        Node *parse_tree = eval(&line);
+        print(parse_tree, 0);
+        Node_drop(parse_tree);
     }
-    free(line);
-    Str_drop(&c);
+    Str_drop(&line);
     return EXIT_SUCCESS;
 }
 
-void print_str_contents(Str* string) {
-    printf("%s", Str_cstr(string));
+size_t read(Str *line, FILE *stream) {
+    printf("parser> ");
+
+    // Clear Str contents.
+    Str_splice(line, 0, Str_length(line), NULL, 0);
+
+    static char buffer[BUFF_SIZE];
+    while (fgets(buffer, BUFF_SIZE, stream) != NULL) {
+        Str_append(line, buffer);
+        if (strchr(buffer, '\n') != NULL) {
+            break;
+        }
+    }
+
+    return Str_length(line);
+}
+
+Node* eval(Str *line) {
+    Scanner scanner = Scanner_value(CharItr_of_Str(line));
+    return parse(&scanner);
+}
+
+void print(Node *node, size_t indention) {
+    for (size_t i = 0; i < indention; ++i) { putchar(' '); }
+
+    switch (node->type) {
+        case ERROR_NODE:
+            printf("ERROR: %s\n", node->data.error);
+            break;
+        case COMMAND_NODE:
+            printf("COMMAND:");
+            StrVec *words = &node->data.command;
+            for (size_t i = 0; i < StrVec_length(words); ++i) {
+                printf(" %s", Str_cstr(StrVec_ref(words, i)));
+            }
+            putchar('\n');
+            break;
+        case PIPE_NODE:
+            printf("PIPE:\n");
+            print(node->data.pipe.left, indention + 4);
+            print(node->data.pipe.right, indention + 4);
+            break;
+    }
 }
