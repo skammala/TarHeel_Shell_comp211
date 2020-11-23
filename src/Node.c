@@ -36,7 +36,7 @@ void* Node_drop(Node *self)
             Node_drop(self->data.pipe.left);
             Node_drop(self->data.pipe.right);
         case COMMAND_NODE:
-            StrVec_drop(&self->data.command);
+            break;
         case ERROR_NODE:
             break;
     }
