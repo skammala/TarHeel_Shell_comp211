@@ -40,7 +40,7 @@ void* Node_drop(Node *self)
             StrVec_drop(&self->data.command);
             free(self);
         case ERROR_NODE:
-            free(self); 
+            free(self);
     }
     return self;
 }
