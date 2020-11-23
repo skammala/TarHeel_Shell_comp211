@@ -5,14 +5,18 @@ static Node* parse_command(Scanner*);
 
 Node* parse(Scanner *scanner)
 {
-    Token next = Scanner_peek(scanner);
-    switch (next.type) {
-        case PIPE_NODE:
-            return parse_pipe(scanner);
-        case WORD_TOKEN:
-            return parse_command(scanner);
-        default:
-            return ErrorNode_new("Expected Command or |");
+    if (Scanner_has_next(scanner)) {
+        Token next = Scanner_peek(scanner);
+        switch (next.type) {
+            case PIPE_NODE:
+                return parse_pipe(scanner);
+            case WORD_TOKEN:
+                return parse_command(scanner);
+            default:
+                return ErrorNode_new("Expected Command or |");
+        }
+    } else {
+        return ErrorNode_new("");
     }
 }
 
@@ -36,10 +40,9 @@ static Node* parse_command(Scanner *scanner) {
             next = Scanner_next(scanner);
             StrVec_push(&words, next.lexeme);
         } else if (peek.type == PIPE_TOKEN) {
-            return PipeNode_new(CommandNode_new(words), parse(scanner)); 
-        } else {
-            break;
-        }
+            Node* right = parse(scanner);
+            return PipeNode_new(CommandNode_new(words), right); 
+        }  
     }
     return CommandNode_new(words);
 }
