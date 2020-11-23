@@ -37,6 +37,8 @@ static Node* parse_command(Scanner *scanner) {
             StrVec_push(&words, next.lexeme);
         } else if (peek.type == PIPE_TOKEN) {
             return PipeNode_new(CommandNode_new(words), parse(scanner)); 
+        } else {
+            break;
         }
     }
     return CommandNode_new(words);
